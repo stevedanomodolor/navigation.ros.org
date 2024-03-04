@@ -378,6 +378,17 @@ Parameters
   Description
     Number of times to recursively attempt to smooth, must be ``>= 1``.
 
+:``<name>``.goal_heading_mode:
+
+  ============== ===========================
+  Type           Default                    
+  -------------- ---------------------------
+  string            "DEFAULT"   
+  ============== ===========================
+
+  Description
+    Goal heading mode enum string to plan goal with multiple orientation. Options are "DEFAULT", "BIDIRECTIONAL" and "ALL_DIRECTION
+
 Example
 *******
 .. code-block:: yaml
@@ -414,6 +425,7 @@ Example
         use_quadratic_cost_penalty: False
         downsample_obstacle_heuristic: True
         allow_primitive_interpolation: False
+        goal_heading_mode: "DEFAULT"        # DEFAULT, BIDIRECTIONAL, ALL_DIRECTION
         smooth_path: True                   # If true, does a simple and quick smoothing post-processing to the path
 
         smoother:
