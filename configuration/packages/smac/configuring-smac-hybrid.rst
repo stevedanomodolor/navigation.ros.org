@@ -387,7 +387,7 @@ Parameters
   ============== ===========================
 
   Description
-    Goal heading mode enum string to plan goal with multiple orientation. Options are "DEFAULT", "BIDIRECTIONAL" and "ALL_DIRECTION
+    Goal heading mode enum string to plan goal with multiple orientation. Options are "DEFAULT", "BIDIRECTIONAL" and "ALL_DIRECTION" With default mode, the planner will plan the goal with the orientation of the goal pose as is untill node. With the "BIDIRECTIONAL" mode, the planner will plan the goal with the orientation of the goal pose and with orientation 180 degree offset from the goal pose orientation. For "ALL_DIRECTION" mode, the planner will plan the goal with the orientation of the goal pose and all the possible orientation based on the angle quantization bins. For both the "BIDIRECTIONAL" and "ALL_DIRECTION" mode, the planner returns the path with the minimum cost.
 
 Example
 *******
