@@ -5,6 +5,18 @@ Iron to Jazzy
 
 Moving from ROS 2 Iron to Jazzy, a number of stability improvements were added that we will not specifically address here.
 
+BehaviorTree.CPP upgraded to version 4.5+
+*****************************************
+
+Since we migrated from version 3.8 to 4.5, users must upgrade their XML and source code accordingly.
+
+You can refer to [this page](https://www.behaviortree.dev/docs/migration) for more details, but the main changes are:
+
+- XML must be changed. This [python script can help](https://github.com/BehaviorTree/BehaviorTree.CPP/blob/master/convert_v3_to_v4.py).
+- The syntax of `SubTrees` has changed; the one of `SubTreePlus` was adopted, instead.
+- If you created a custom **ControlNode** or **DecoratorNode**, you must handle the case when a child returns `BT::NodeStatus::SKIPPED`.
+
+
 Added TwistStamped Option for Commands
 **************************************
 
@@ -13,13 +25,13 @@ A new parameter ``enable_stamped_cmd_vel`` has been added to all of the publishe
 Add VelocityPolygon in Collision Monitor
 ****************************************
 
-`PR #3708 <https://github.com/ros-planning/navigation2/pull/3708>`_ adds ``VelocityPolgon`` type in Collision Monitor. This allows the user to setup multiple polygons to cover the range of the robot's velocity limits. For example, the user can configure different polygons for rotation, moving forward, or moving backward. The Collision Monitor will check the robot's velocity against each sub polygon to determine the approriate polygon to be used for collision checking. The tutorial is available in the :ref:`Configuring Collision Monitor with VelocityPolygon <collision_monitor_tutorial>` section.
+`PR #3708 <https://github.com/ros-planning/navigation2/pull/3708>`_ adds ``VelocityPolgon`` type in Collision Monitor. This allows the user to setup multiple polygons to cover the range of the robot's velocity limits. For example, the user can configure different polygons for rotation, moving forward, or moving backward. The Collision Monitor will check the robot's velocity against each sub polygon to determine the appropriate polygon to be used for collision checking. The tutorial is available in the :ref:`Configuring Collision Monitor with VelocityPolygon <collision_monitor_tutorial>` section.
 
 
 Change polygon points parameter format in Collision Monitor
 ***********************************************************
 
-`PR #4020 <https://github.com/ros-planning/navigation2/pull/4020>`_ changes the format of the Polygon points parameter from ``vector<double>`` to ``string``. This makes the polygon description more uniform accross the Collision Monitor and Costmap_2D.
+`PR #4020 <https://github.com/ros-planning/navigation2/pull/4020>`_ changes the format of the Polygon points parameter from ``vector<double>`` to ``string``. This makes the polygon description more uniform across the Collision Monitor and Costmap_2D.
 Now we can define a polygon's points in string that has a ``vector<vector<double>>`` structure like this ``"[[p1.x, p1.y], [p2.x, p2.y], [p3.x, p3.y],...]"`` with a minimum of 4 points described. An example of a Square polygon will be written as follows.
 
 
@@ -37,7 +49,7 @@ Now we can define a polygon's points in string that has a ``vector<vector<double
 Introduction of Soft-Real Time Action Servers
 *********************************************
 
-`PR #3914 <https://github.com/ros-planning/navigation2/pull/3914>`_ adds soft real-time priorization to the controller server to better ensure resources to time sensitive portions of the codebase. The Simple Action Server now has a ``realtime`` input field exposed in the Controller Server via the parameter ``use_realtime_priority`` which will set the controller's execution thread to a higher priority than the rest of the system to meet scheduling deadlines. To use this feature, you use set the following inside of ``/etc/security/limits.conf`` to give userspace access to elevated prioritization permissions. This is currently only enabled in the Controller Server, who's execution thread is sensitive to scheduling priorities, but could be set with other threads in the future if found necessary.
+`PR #3914 <https://github.com/ros-planning/navigation2/pull/3914>`_ adds soft real-time prioritization to the controller server to better ensure resources to time sensitive portions of the codebase. The Simple Action Server now has a ``realtime`` input field exposed in the Controller Server via the parameter ``use_realtime_priority`` which will set the controller's execution thread to a higher priority than the rest of the system to meet scheduling deadlines. To use this feature, you use set the following inside of ``/etc/security/limits.conf`` to give userspace access to elevated prioritization permissions. This is currently only enabled in the Controller Server, who's execution thread is sensitive to scheduling priorities, but could be set with other threads in the future if found necessary.
 
 .. code-block:: text
 
@@ -53,10 +65,19 @@ A new metapackage exists in: https://github.com/open-navigation/opennav_coverage
 
 If you'd like to see coverage planning in Nav2 directly, please consider contributing `to the as-of-yet needed features described here <https://github.com/Fields2Cover/Fields2Cover/issues/73>`_.
 
+``opennav_docking`` Project
+****************************
+
+A new metapackage exists in: https://github.com/open-navigation/opennav_docking which contains complete automatic charging dock framework, BT nodes, plugins, and demos. 
+This allows for docking of any type of robot with any type of charging dock in a repeatable and generalized way.
+It will be integrated into Nav2 directly soon (Update June 2024: within Nav2 stack directly ``nav2_docking``!)
+
+See :ref:`docking_tutorial` for a tutorial on using this new capability! Thanks to NVIDIA for sponsoring this package!
+
 Introduce a new Multi-Robot Bringup Launch
 ******************************************
 
-`PR #3572 <https://github.com/ros-planning/navigation2/pull/3572>`_ introduces a new way of bringup tb3 multi-robot that names as ``cloned_tb3_simulation_launch.py`` for simulation. ``cloned_tb3_simulation_launch.py`` enables to bring up multiple robots with same parameter that described in ``nav2_multirobot_param_all.yaml``. And multiple robots are separeted by namespaces which are given as a Launch Arguments.
+`PR #3572 <https://github.com/ros-planning/navigation2/pull/3572>`_ introduces a new way of bringup tb3 multi-robot that names as ``cloned_tb3_simulation_launch.py`` for simulation. ``cloned_tb3_simulation_launch.py`` enables to bring up multiple robots with same parameter that described in ``nav2_multirobot_param_all.yaml``. And multiple robots are separated by namespaces which are given as a Launch Arguments.
 Existing ``multi_tb3_simulation_launch.py`` which was utilized in previous is replaced with ``unique_tb3_simulation_launch.py``, allowing for multiple unique robot instances utilizing ``nav2_multirobot_params_<N>.yaml`` configuration files.
 
 
@@ -97,6 +118,11 @@ Addition of new MPPI Cost Critic
 Analog to the ``ObstacleCritic``, the ``CostCritic`` is another obstacle avoiding critic alternative if the ``ObstacleCritic`` is not working well for you.
 This critic uses the inflated costs in the costmap to score rather than distance to obstacles as the ``ObstaclesCritic`` does.
 See the configuration guide for more information.
+
+MPPI Acceleration
+*****************
+
+New to Jazzy, MPPI is 45% faster due to a weeks long optimization campaign. Enjoy!
 
 Move Error Code Enumerations
 ****************************
@@ -227,7 +253,7 @@ The stack no longer contains wall timers or wall rates. It will now use the node
 New Graceful Motion Controller
 ******************************
 
-`PR #4021 <https://github.com/ros-planning/navigation2/pull/4021>`_ introduces a new type of controller for differential robots based on a pose-following kinematic control law that generates a smooth and confortable trajectory.
+`PR #4021 <https://github.com/ros-planning/navigation2/pull/4021>`_ introduces a new type of controller for differential robots based on a pose-following kinematic control law that generates a smooth and comfortable trajectory.
 
 See :ref:`configuring_graceful_motion_controller` for more information.
 
@@ -265,7 +291,7 @@ Interpolation is based on the orientation of the vector formed by the last 2 pos
 .. image:: images/rpp_goal_lookahead_interpolate.gif
   :width: 45%
 
-Additionally, the conflict between ``use_rotate_to_heading` and ``allow_reversing`` was fixed so ``use_rotate_to_heading`` can now be used backward.
+Additionally, the conflict between ``use_rotate_to_heading`` and ``allow_reversing`` was fixed so ``use_rotate_to_heading`` can now be used backward.
 
 Cancel Checker Interface For GlobalPlanner
 *******************************************
@@ -308,3 +334,58 @@ Here is an Example of the smacHybrid planner with the all_directions goal_headin
     :width: 700px
     :alt: Navigation2 with smacHybrid planner with all_direction goal_heading_mode
     :align: center
+
+New BtActionServer/BtNavigator parameter
+****************************************
+
+`PR #4209 <https://github.com/ros-planning/navigation2/pull/4209>`_ introduces a new boolean parameter ``always_reload_bt_xml``, which enables the possibility to always reload a requested behavior tree XML description, regardless of the currently active XML. This allows keeping the action server running while changing/developing the XML description.
+
+
+New collision monitor parameter
+*******************************
+
+`PR #4207 <https://github.com/ros-planning/navigation2/pull/4207>`_ introduces a new boolean parameter ``polygon_subscribe_transient_local`` (value is false by default), which set the QoS durability for polygon topic or footprint topic subscription.
+
+
+New graceful cancellation API for Controllers
+*********************************************
+
+`PR #4136 <https://github.com/ros-planning/navigation2/pull/4136>`_ introduces a new graceful cancellation API for controllers. Previously when a goal was canceled, the controller would stop the robot immediately. This API allows the controller to stop the robot in a more graceful way. The new API is implemented in the ``RegulatedPurePursuitController`` by adding a new parameter ``cancel_deceleration``. So when the goal is canceled, a constant deceleration will be used while continuing to track the path to stop the robot instead of stopping immediately. This API can be should be added to all controllers that have acceleration limits.
+
+
+Standardization of Plugin Naming with Double Colons (::)
+********************************************************
+
+`PR #4220`_ standardizes plugin naming across the Navigation2 package to use double colons (::), replacing the previous mixed use of slashes (/) and double colons. Affected plugins include:
+
+- Behavior Server: ``nav2_behaviors::Spin``, ``nav2_behaviors::BackUp``, ``nav2_behaviors::DriveOnHeading``, ``nav2_behaviors::Wait``, ``nav2_behaviors::AssistedTeleop``
+- Planner Server: ``nav2_navfn_planner::NavfnPlanner``, ``nav2_smac_planner::SmacPlanner2D``, ``nav2_smac_planner::SmacPlannerHybrid``, ``nav2_theta_star_planner::ThetaStarPlanner``
+- Controller Server: ``nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController``, ``nav2_dwb_controller::DWBLocalPlanner``
+- BT Navigator: ``nav2_bt_navigator::NavigateToPoseNavigator``, ``nav2_bt_navigator::NavigateThroughPosesNavigator``
+
+
+Collision monitor: dynamic radius for circle type polygons
+**********************************************************
+`PR #4226 <https://github.com/ros-planning/navigation2/pull/4226>`_ introduces usage of parameter ``<polygon_name>.polygon_sub_topic`` for circle type polygons. If parameter ``<polygon_name>.radius`` is not set, collision monitor node subscribes to topic ``<polygon_name>.polygon_sub_topic`` (subscription type is ``std_msgs/msg/Float32``), and the current circle polygon radius will be updating accordingly to received messages on topic.
+
+
+Static Layer: new parameter ``footprint_clearing_enabled``
+**********************************************************
+`PR #4282 <https://github.com/ros-planning/navigation2/pull/4282>`_ introduces usage of parameter ``footprint_clearing_enabled`` for the static layer. It works similarly to the ``footprint_clearing_enabled`` parameter in the obstacle and voxel layer. If set to ``true``, the static layer will clear the costmap cells that are within the robot's footprint. It is ``false`` by default to keep the previous behavior.
+
+Lifecycle Node: added bond_heartbeat_period parameter (and allow disabling the bond mechanism)
+**********************************************************************************************
+
+`PR #4342 <https://github.com/ros-planning/navigation2/pull/4342>`_ adds the parameter ``bond_heartbeat_period`` to the lifecycle nodes to customize the bond mechanism publishing period (on the ``/bond`` topic). Default value unchanged to 0.1s. Disabled if inferior or equal to 0.0.
+
+Rotation Shim Controller: new parameter ``rotate_to_goal_heading``
+******************************************************************
+`PR #4332 <https://github.com/ros-planning/navigation2/pull/4332>`_ introduces usage of parameter ``rotate_to_goal_heading`` for the rotation shim controller. It allows the rotation shim controller to take back control when reaching the XY goal tolerance to perform a clean rotation towards the goal heading. Some controllers will do this internally, but it is a useful option for others.
+
+MPPI Controller: Addition of acceleration constraints 
+******************************************************
+`PR #4352 <https://github.com/ros-navigation/navigation2/pull/4352>`_ adds new parameters ``ax_max``, ``ax_min``, ``ay_max``, ``az_max`` for the MPPI controller. These parameters will enable the MPPI controller to generate local trajectories within the specified acceleration constraints.
+
+RegulatedPurePursuit Controller [RPP]: new parameter ``use_cancel_deceleration``
+********************************************************************************
+`PR #4441 <https://github.com/ros-navigation/navigation2/pull/4441>`_ adds a new parameter use_cancel_deceleration for the regulated pure pursuit controllers. This parameter enables the controller to use a constant deceleration to stop the robot gracefully instead of stopping immediately when a goal is canceled.

@@ -98,7 +98,7 @@ Parameters
   ============== =============================
 
   Description
-    Percentage of beams after not matching map to force full update due to bad convergance.
+    Percentage of beams after not matching map to force full update due to bad convergence.
 
 :beam_skip_threshold:
 
@@ -274,7 +274,7 @@ Parameters
   ============== =============================
 
   Description
-    Particle filter population density.
+    Particle filter population density. 2.33 is the 99% percentile.
 
 :recovery_alpha_fast:
 
@@ -478,6 +478,16 @@ Parameters
   Description
     Allows AMCL to accept maps more than once on the map_topic. This is especially useful when you're using the `LoadMap` service in `map_server`. Prior to Humble, this is ``first_map_only_``.
 
+:bond_heartbeat_period:
+
+  ============== =============================
+  Type           Default
+  -------------- -----------------------------
+  double         0.1
+  ============== =============================
+
+  Description
+    The lifecycle node bond mechanism publishing period (on the /bond topic). Disabled if inferior or equal to 0.0.
 
 Example
 *******

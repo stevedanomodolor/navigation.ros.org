@@ -36,7 +36,7 @@ Parameters
           ros__parameters:
             planner_plugins: ["GridBased"]
             GridBased:
-              plugin: "nav2_navfn_planner/NavfnPlanner"
+              plugin: "nav2_navfn_planner::NavfnPlanner" # In Iron and older versions, "/" was used instead of "::"
     ..
 
 :expected_planner_frequency:
@@ -63,6 +63,17 @@ Parameters
     15 minutes in rcl but was changed to 10 seconds in this `PR #1012 <https://github.com/ros2/rcl/pull/1012>`_, which may be less than
     some actions in Nav2 take to run. For most applications, this should not need to be adjusted as long as the actions within the server do not exceed this deadline. 
     This issue has been raised with OSRF to find another solution to avoid active goal timeouts for bookkeeping, so this is a semi-temporary workaround
+    
+:bond_heartbeat_period:
+
+  ============== =============================
+  Type           Default
+  -------------- -----------------------------
+  double         0.1
+  ============== =============================
+
+  Description
+    The lifecycle node bond mechanism publishing period (on the /bond topic). Disabled if inferior or equal to 0.0.
 
 Default Plugins
 ***************
@@ -72,7 +83,7 @@ When the :code:`planner_plugins` parameter is not overridden, the following defa
   ================= =====================================================
   Namespace         Plugin
   ----------------- -----------------------------------------------------
-  "GridBased"       "nav2_navfn_planner/NavfnPlanner"
+  "GridBased"       "nav2_navfn_planner::NavfnPlanner"
   ================= =====================================================
 
 Example
@@ -84,4 +95,4 @@ Example
         expected_planner_frequency: 20.0
         planner_plugins: ['GridBased']
         GridBased:
-          plugin: 'nav2_navfn_planner/NavfnPlanner'
+          plugin: 'nav2_navfn_planner::NavfnPlanner' # In Iron and older versions, "/" was used instead of "::"

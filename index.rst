@@ -23,6 +23,11 @@ Our Sponsors
     :align: center
     :alt: Our Sponsors
 
+Services
+########
+
+If you need professional services related to Nav2, please contact Open Navigation at info@opennav.org.
+
 Overview
 ########
 
@@ -71,7 +76,7 @@ It has tools to:
 - Monitor raw sensor data for imminent collision or dangerous situation
 - Python3 API to interact with Nav2 and its internal task servers in a pythonic manner
 - A smoother on output velocities to guarantee dynamic feasibility of commands
-- And More!
+- ... and more!
 
 .. image:: images/nav2_architecture.png
     :width: 700px
@@ -80,11 +85,6 @@ It has tools to:
 
 We also provide a set of starting plugins to get you going. 
 A list of all plugins can be found on :ref:`plugins` - but they include algorithms for the spanning cross section of common behaviors and robot platform types.
-
-Services
-########
-
-If you need professional services related to Nav2, please contact Open Navigation at info@opennav.org.
 
 Related Projects
 ################

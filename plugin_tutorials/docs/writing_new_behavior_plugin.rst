@@ -54,11 +54,11 @@ Let's learn more about the methods needed to write a Behavior Plugin **if you di
 |                      | and shared pointer to a collision checker.                                  |                         |
 +----------------------+-----------------------------------------------------------------------------+-------------------------+
 | activate()           | Method is called when behavior server enters on_activate state. Ideally     | Yes                     |
-|                      | this method should implement operations which are neccessary before the     |                         |
+|                      | this method should implement operations which are necessary before the      |                         |
 |                      | behavior goes to an active state.                                           |                         |
 +----------------------+-----------------------------------------------------------------------------+-------------------------+
 | deactivate()         | Method is called when behavior server enters on_deactivate state. Ideally   | Yes                     |
-|                      | this method should implement operations which are neccessary before         |                         |
+|                      | this method should implement operations which are necessary before          |                         |
 |                      | behavior goes to an inactive state.                                         |                         |
 +----------------------+-----------------------------------------------------------------------------+-------------------------+
 | cleanup()            | Method is called when behavior server goes to on_cleanup state. Ideally     | Yes                     |
@@ -80,7 +80,7 @@ This tutorial uses this wrapper so these are the main elements we will address.
 |                      | velocity for the current cycle, publishing it and checking for completion.  |                         |
 +----------------------+-----------------------------------------------------------------------------+-------------------------+
 | onConfigure()        | Method is called when behavior server enters on_configure state. Ideally    | No                      |
-|                      | this method should implement operations which are neccessary before         |                         |
+|                      | this method should implement operations which are necessary before          |                         |
 |                      | behavior goes to a configured state (get parameters, etc).                  |                         |
 +----------------------+-----------------------------------------------------------------------------+-------------------------+
 | onCleanup()          | Method is called when behavior server goes to on_cleanup state. Ideally     | No                      |
@@ -123,7 +123,7 @@ We receive an action goal, ``command``, which we want to process.
 This is the "call for help" message that we want to send via SMS to our brothers in arms in the operations center.
 
 We use the service Twilio to complete this task.
-Please `create an account <https://www.twilio.com/>`_ and get all the relavent information needed for creating the service (e.g. ``account_sid``, ``auth_token``, and a phone number).
+Please `create an account <https://www.twilio.com/>`_ and get all the relevant information needed for creating the service (e.g. ``account_sid``, ``auth_token``, and a phone number).
 You can set these values as parameters in your configuration files corresponding to the ``onConfigure()`` parameter declarations.
 
 We use the ``_twilio`` object to send our message with your account information from the configuration file.
@@ -172,7 +172,7 @@ It is good practice to place these lines at the end of the file but technically,
 .. code-block:: xml
 
   <library path="nav2_sms_behavior_plugin">
-    <class name="nav2_sms_behavior/SendSms" type="nav2_sms_behavior::SendSms" base_class_type="nav2_core::Behavior">
+    <class type="nav2_sms_behavior::SendSms" base_class_type="nav2_core::Behavior">
       <description>This is an example plugin which produces an SMS text message recovery.</description>
     </class>
   </library>
@@ -211,11 +211,11 @@ To enable the plugin, we need to modify the ``nav2_params.yaml`` file as below t
       behavior_plugins: ["spin", "backup", "wait"]  # Humble and later
       recovery_plugins: ["spin", "backup", "wait"]  # Galactic and earlier
       spin:
-        plugin: "nav2_behaviors/Spin"
+        plugin: "nav2_behaviors::Spin" # In Iron and older versions, "/" was used instead of "::"
       backup:
-        plugin: "nav2_behaviors/BackUp"
+        plugin: "nav2_behaviors::BackUp" # In Iron and older versions, "/" was used instead of "::"
       wait:
-        plugin: "nav2_behaviors/Wait"
+        plugin: "nav2_behaviors::Wait" # In Iron and older versions, "/" was used instead of "::"
       global_frame: odom
       robot_base_frame: base_link
       transform_timeout: 0.1
@@ -240,13 +240,13 @@ with
       behavior_plugins: ["spin", "backup", "wait","send_sms"]  # Humble and newer
       recovery_plugins: ["spin", "backup", "wait","send_sms"]  # Galactic and earlier
       spin:
-        plugin: "nav2_behaviors/Spin"
+        plugin: "nav2_behaviors::Spin" # In Iron and older versions, "/" was used instead of "::"
       backup:
-        plugin: "nav2_behaviors/BackUp"
+        plugin: "nav2_behaviors::BackUp" # In Iron and older versions, "/" was used instead of "::"
       wait:
-        plugin: "nav2_behaviors/Wait"
+        plugin: "nav2_behaviors::Wait" # In Iron and older versions, "/" was used instead of "::"
       send_sms:
-        plugin: "nav2_sms_behavior/SendSms"
+        plugin: "nav2_sms_behavior::SendSms" # In Iron and older versions, "/" was used instead of "::"
       account_sid: ... # your sid
       auth_token: ... # your token
       from_number: ... # your number

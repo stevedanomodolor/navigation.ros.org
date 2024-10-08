@@ -121,11 +121,11 @@ Publish Costmap Layers
 
 Give Behavior Server Access to Both Costmaps
 ********************************************
-`PR #3255 <https://github.com/ros-planning/navigation2/pull/3255>`_ addes the ability for a behavior to access the local and global costmap. 
+`PR #3255 <https://github.com/ros-planning/navigation2/pull/3255>`_ adds the ability for a behavior to access the local and global costmap. 
 
 To update behaviors, any reference to the global_frame must be updated to the local_frame parameter
 along with the ``configuration`` method which now takes in the local and global collision checkers.
-Lastly, ``getResourceInfo`` must be overriden to return ``CostmapInfoType::LOCAL``. Other options include ``GLOBAL`` if the behavior useses global costmap and/or footprint)
+Lastly, ``getResourceInfo`` must be overridden to return ``CostmapInfoType::LOCAL``. Other options include ``GLOBAL`` if the behavior useses global costmap and/or footprint)
 or ``BOTH`` if both are required. This allows us to only create and maintain the minimum amount of expensive resources.   
 
 New Model Predictive Path Integral Controller
@@ -137,7 +137,7 @@ See the README.md and :ref:`configuring_mppic` page for more detail.
 
 Behavior Tree Uses Error Codes
 ******************************
-`PR #3324 <https:https://github.com/ros-planning/navigation2/pull/3324>`_ adds three new condition nodes to check for error codes on the blackboard set by action BT nodes which contain them. 
+`PR #3324 <https://github.com/ros-planning/navigation2/pull/3324>`_ adds three new condition nodes to check for error codes on the blackboard set by action BT nodes which contain them. 
 
 The ``AreErrorCodesPresent`` condition node allows the user to specify the error code from the server along with the error codes to match against. 
 The ``WouldAControllerRecoveryHelp`` checks if the active error code is UNKNOWN, PATIENCE_EXCEEDED, FAILED_TO_MAKE_PROGRESS or NO_VALID_CONTROL. 
@@ -155,7 +155,7 @@ These error code are potentially able to be cleared by a smoother recovery.
 Load, Save and Loop Waypoints from the Nav2 Panel in RViz
 *********************************************************
 
-`PR #3165 <https:https://github.com/ros-planning/navigation2/pull/3165>`_ provides three new functionalities for the nav2 panel in RViz, they are:
+`PR #3165 <https://github.com/ros-planning/navigation2/pull/3165>`_ provides three new functionalities for the nav2 panel in RViz, they are:
 
 - load and save waypoints in a yaml file for waypoint following (initial pose can also be stored if required)
 - loop functionality to revisit the waypoints
@@ -224,4 +224,4 @@ More information about ``Denoise Layer`` plugin and how it works could be found 
 
 SmacPlannerHybrid viz_expansions parameter
 ******************************************
-`PR #3577 <https://github.com/ros-planning/navigation2/pull/3577>`_ adds a new paremeter for visualising SmacPlannerHybrid expansions for debug purpose.
+`PR #3577 <https://github.com/ros-planning/navigation2/pull/3577>`_ adds a new parameter for visualising SmacPlannerHybrid expansions for debug purpose.

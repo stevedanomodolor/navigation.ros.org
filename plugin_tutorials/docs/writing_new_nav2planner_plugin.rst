@@ -48,19 +48,19 @@ Let's learn more about the methods needed to write a planner plugin.
 |                      | shared pointer to costmap.                                                  |                         |
 +----------------------+-----------------------------------------------------------------------------+-------------------------+
 | activate()           | Method is called when planner server enters on_activate state. Ideally this | Yes                     |
-|                      | method should implement operations which are neccessary before planner goes |                         |
+|                      | method should implement operations which are necessary before planner goes  |                         |
 |                      | to an active state.                                                         |                         |
 +----------------------+-----------------------------------------------------------------------------+-------------------------+
 | deactivate()         | Method is called when planner server enters on_deactivate state. Ideally    | Yes                     |
-|                      | this method should implement operations which are neccessary before planner |                         |
+|                      | this method should implement operations which are necessary before planner  |                         |
 |                      | goes to an inactive state.                                                  |                         |
 +----------------------+-----------------------------------------------------------------------------+-------------------------+
 | cleanup()            | Method is called when planner server goes to on_cleanup state. Ideally this | Yes                     |
-|                      | method should clean up resoures which are created for the planner.          |                         |
+|                      | method should clean up resources which are created for the planner.         |                         |
 +----------------------+-----------------------------------------------------------------------------+-------------------------+
 | createPlan()         | Method is called when planner server demands a global plan for specified    | Yes                     |
 |                      | start and goal pose. This method returns `nav_msgs\:\:msg\:\:Path` carrying |                         |
-|                      | global plan. This method takes 2 input parmas: start pose and goal pose.    |                         |
+|                      | global plan. This method takes 2 input params: start pose and goal pose.    |                         |
 +----------------------+-----------------------------------------------------------------------------+-------------------------+
 
 For this tutorial, we will be using methods ``StraightLine::configure()`` and ``StraightLine::createPlan()`` to create straight-line planner.
@@ -162,7 +162,7 @@ It is good practice to place these lines at the end of the file, but technically
 .. code-block:: xml
 
   <library path="nav2_straightline_planner_plugin">
-    <class name="nav2_straightline_planner/StraightLine" type="nav2_straightline_planner::StraightLine" base_class_type="nav2_core::GlobalPlanner">
+    <class type="nav2_straightline_planner::StraightLine" base_class_type="nav2_core::GlobalPlanner">
       <description>This is an example plugin which produces straight path.</description>
     </class>
   </library>
@@ -200,7 +200,7 @@ To enable the plugin, we need to modify the ``nav2_params.yaml`` file as below t
       plugins: ["GridBased"]
       use_sim_time: True
       GridBased:
-        plugin: "nav2_navfn_planner/NavfnPlanner" # For Foxy and later
+        plugin: "nav2_navfn_planner::NavfnPlanner" # For Foxy and later. In Iron and older versions, "/" was used instead of "::"
         tolerance: 2.0
         use_astar: false
         allow_unknown: true
@@ -214,10 +214,10 @@ with
       plugins: ["GridBased"]
       use_sim_time: True
       GridBased:
-        plugin: "nav2_straightline_planner/StraightLine"
+        plugin: "nav2_straightline_planner::StraightLine"
         interpolation_resolution: 0.1
 
-In the above snippet, you can observe the mapping of our ``nav2_straightline_planner/StraightLine`` planner to its id ``GridBased``. To pass plugin-specific parameters, we have used ``<plugin_id>.<plugin_specific_parameter>``.
+In the above snippet, you can observe the mapping of our ``nav2_straightline_planner::StraightLine`` planner to its id ``GridBased``. To pass plugin-specific parameters, we have used ``<plugin_id>.<plugin_specific_parameter>``.
 
 4- Run StraightLine plugin
 ---------------------------

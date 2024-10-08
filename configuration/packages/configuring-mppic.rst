@@ -173,6 +173,50 @@ MPPI Parameters
   Description
     Maximum rotational velocity (rad/s).
 
+:ax_max:
+
+  ============== ===========================
+  Type           Default                    
+  -------------- ---------------------------
+  double         3.0 
+  ============== ===========================
+
+  Description
+    Maximum forward acceleration (m/s^2).
+
+:ay_max:
+
+  ============== ===========================
+  Type           Default                    
+  -------------- ---------------------------
+  double         3.0 
+  ============== ===========================
+
+  Description
+    Maximum lateral acceleration in either direction, if using ``Omni`` motion model (m/s^2).
+
+:ax_min:
+
+  ============== ===========================
+  Type           Default                    
+  -------------- ---------------------------
+  double         -3.0 
+  ============== ===========================
+
+  Description
+    Maximum deceleration along the X-axis (m/s^2).
+
+:az_max:
+
+  ============== ===========================
+  Type           Default                    
+  -------------- ---------------------------
+  double         3.5 
+  ============== ===========================
+
+  Description
+    Maximum angular acceleration (rad/s^2).
+
 :temperature:
 
   ============== ===========================
@@ -204,7 +248,7 @@ MPPI Parameters
   ============== ===========================
 
   Description
-    Whether to publish debuggin trajectories for visualization. This can slow down the controller substantially (e.g. 1000 batches of 56 size every 30hz is alot of data).
+    Whether to publish debugging trajectories for visualization. This can slow down the controller substantially (e.g. 1000 batches of 56 size every 30hz is a lot of data).
 
 :retry_attempt_limit:
 
@@ -650,6 +694,16 @@ This critic incentivizes navigating away from obstacles and critical collisions 
   Description
     Name of the inflation layer. If empty, it uses the last inflation layer in the costmap. If you have multiple inflation layers, you may want to specify the name of the layer to use.
 
+:trajectory_point_step:
+
+  ============== ===========================
+  Type           Default                    
+  -------------- ---------------------------
+  int            2
+  ============== ===========================
+
+  Description
+    The step to take in trajectories for evaluating them in the critic. Since trajectories are extremely dense, its unnecessary to evaluate each point and computationally expensive.
 
 Path Align Critic
 -----------------
@@ -721,6 +775,18 @@ This critic incentivizes aligning with the global path, if relevant. It does not
 
   Description
     Whether to consider path's orientations in path alignment, which can be useful when paired with feasible smac planners to incentivize directional changes only where/when the smac planner requests them. If you want the robot to deviate and invert directions where the controller sees fit, keep as false. If your plans do not contain orientation information (e.g. navfn), keep as false.
+
+:trajectory_point_step:
+
+  ============== ===========================
+  Type           Default                    
+  -------------- ---------------------------
+  int            4
+  ============== ===========================
+
+  Description
+    The step to take in trajectories for evaluating them in the critic. Since trajectories are extremely dense, its unnecessary to evaluate each point and computationally expensive.
+
 
 Path Angle Critic
 -----------------
@@ -908,6 +974,44 @@ This critic penalizes unnecessary 'twisting' with holonomic vehicles. It adds a 
   Description
     Power order to apply to term.
 
+Velocity Deadband Critic
+------------------------
+
+This critic penalizes velocities that fall below the deadband threshold, helping to mitigate hardware limitations on certain platforms.
+
+:cost_weight:
+
+  =============== ===========================
+  Type            Default                    
+  --------------- ---------------------------
+  double          35.0
+  =============== ===========================
+
+  Description
+    Weight to apply to critic term.
+
+:cost_power:
+
+  ===============  ===========================
+  Type             Default                    
+  ---------------  ---------------------------
+  int              1
+  ===============  ===========================
+
+  Description
+    Power order to apply to term.
+
+:deadband_velocities:
+
+  ===============  ===========================
+  Type             Default                    
+  ---------------  ---------------------------
+  array of double  [0.05, 0.05, 0.05]
+  ===============  ===========================
+
+  Description
+    The array of deadband velocities [vx, vz, wz]. A zero array indicates that the critic will take no action.
+
 Example
 *******
 .. code-block:: yaml
@@ -927,6 +1031,10 @@ Example
           vx_min: -0.35
           vy_max: 0.5
           wz_max: 1.9
+          ax_max: 3.0
+          ax_min: -3.0
+          ay_max: 3.0
+          az_max: 3.5
           iteration_count: 1
           prune_distance: 1.7
           transform_tolerance: 0.1
@@ -941,7 +1049,7 @@ Example
             time_step: 3
           AckermannConstraints:
             min_turning_r: 0.2
-          critics: ["ConstraintCritic", "ObstaclesCritic", "GoalCritic", "GoalAngleCritic", "PathAlignCritic", "PathFollowCritic", "PathAngleCritic", "PreferForwardCritic"]
+          critics: ["ConstraintCritic", "CostCritic", "GoalCritic", "GoalAngleCritic", "PathAlignCritic", "PathFollowCritic", "PathAngleCritic", "PreferForwardCritic"]
           ConstraintCritic:
             enabled: true
             cost_power: 1
@@ -961,31 +1069,32 @@ Example
             cost_power: 1
             cost_weight: 5.0
             threshold_to_consider: 0.5
-          ObstaclesCritic:
-            enabled: true
-            cost_power: 1
-            repulsion_weight: 1.5
-            critical_weight: 20.0
-            consider_footprint: false
-            collision_cost: 10000.0
-            collision_margin_distance: 0.1
-            near_goal_distance: 0.5
-            inflation_radius: 0.55 # (only in Humble)
-            cost_scaling_factor: 10.0 # (only in Humble)
-          # CostCritic:
+          # ObstaclesCritic:
           #   enabled: true
           #   cost_power: 1
-          #   cost_weight: 3.81
-          #   critical_cost: 300.0
-          #   consider_footprint: true
-          #   collision_cost: 1000000.0
-          #   near_goal_distance: 1.0
+          #   repulsion_weight: 1.5
+          #   critical_weight: 20.0
+          #   consider_footprint: false
+          #   collision_cost: 10000.0
+          #   collision_margin_distance: 0.1
+          #   near_goal_distance: 0.5
+          #   inflation_radius: 0.55 # (only in Humble)
+          #   cost_scaling_factor: 10.0 # (only in Humble)
+          CostCritic:
+            enabled: true
+            cost_power: 1
+            cost_weight: 3.81
+            critical_cost: 300.0
+            consider_footprint: true
+            collision_cost: 1000000.0
+            near_goal_distance: 1.0
+            trajectory_point_step: 2
           PathAlignCritic:
             enabled: true
             cost_power: 1
             cost_weight: 14.0
             max_path_occupancy_ratio: 0.05
-            trajectory_point_step: 3
+            trajectory_point_step: 4
             threshold_to_consider: 0.5
             offset_from_furthest: 20
             use_path_orientations: false
@@ -1003,6 +1112,11 @@ Example
             threshold_to_consider: 0.5
             max_angle_to_furthest: 1.0
             mode: 0
+          # VelocityDeadbandCritic:
+          #   enabled: true
+          #   cost_power: 1
+          #   cost_weight: 35.0
+          #   deadband_velocities: [0.05, 0.05, 0.05]
           # TwirlingCritic:
           #   enabled: true
           #   twirling_cost_power: 1
@@ -1017,7 +1131,7 @@ General Words of Wisdom
 
 The ``model_dt`` parameter generally should be set to the duration of your control frequency. So if your control frequency is 20hz, this should be ``0.05``. However, you may also set it lower **but not larger**.
 
-Visualization of the trajectories using ``visualize`` uses compute resources to back out trajectories for visualization and therefore slows compute time. It is not suggested that this parameter is set to ``true`` during a deployed use, but is a useful debug instrument while tuning the system, but use sparingly. Visualizing 2000 batches @ 56 points at 30 hz is *alot*.
+Visualization of the trajectories using ``visualize`` uses compute resources to back out trajectories for visualization and therefore slows compute time. It is not suggested that this parameter is set to ``true`` during a deployed use, but is a useful debug instrument while tuning the system, but use sparingly. Visualizing 2000 batches @ 56 points at 30 hz is *a lot*.
 
 The most common parameters you might want to start off changing are the velocity profiles (``vx_max``, ``vx_min``, ``wz_max``, and ``vy_max`` if holonomic) and the ``motion_model`` to correspond to your vehicle. Its wise to consider the ``prune_distance`` of the path plan in proportion to your maximum velocity and prediction horizon. The only deeper parameter that will likely need to be adjusted for your particular settings is the Obstacle critics' ``repulsion_weight`` since the tuning of this is proprtional to your inflation layer's radius. Higher radii should correspond to reduced ``repulsion_weight`` due to the penalty formation (e.g. ``inflation_radius - min_dist_to_obstacle``). If this penalty is too high, the robot will slow significantly when entering cost-space from non-cost space or jitter in narrow corridors. It is noteworthy, but likely not necessary to be changed, that the Obstacle critic may use the full footprint information if ``consider_footprint = true``, though comes at an increased compute cost.
 

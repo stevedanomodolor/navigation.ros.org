@@ -226,7 +226,7 @@ Parameters
   ====== =======
 
   Description
-    Cache the obstacle map dynamic programming distance expansion heuristic between subsiquent replannings of the same goal location. Dramatically speeds up replanning performance (40x) if costmap is largely static.
+    Cache the obstacle map dynamic programming distance expansion heuristic between subsequent replannings of the same goal location. Dramatically speeds up replanning performance (40x) if costmap is largely static.
 
 :``<name>``.allow_reverse_expansion:
 
@@ -351,7 +351,7 @@ Example
       use_sim_time: True
 
       GridBased:
-        plugin: "nav2_smac_planner/SmacPlannerLattice"
+        plugin: "nav2_smac_planner::SmacPlannerLattice" # In Iron and older versions, "/" was used instead of "::"
         allow_unknown: true                 # Allow traveling in unknown space
         tolerance: 0.25                     # dist-to-goal heuristic cost (distance) for valid tolerance endpoints if exact goal cannot be found.
         max_iterations: 1000000             # Maximum total iterations to search for before failing (in case unreachable), set to -1 to disable
@@ -369,7 +369,7 @@ Example
         retrospective_penalty: 0.015
         lattice_filepath: ""                # The filepath to the state lattice graph
         lookup_table_size: 20.0             # Size of the dubin/reeds-sheep distance window to cache, in meters.
-        cache_obstacle_heuristic: false     # Cache the obstacle map dynamic programming distance expansion heuristic between subsiquent replannings of the same goal location. Dramatically speeds up replanning performance (40x) if costmap is largely static.
+        cache_obstacle_heuristic: false     # Cache the obstacle map dynamic programming distance expansion heuristic between subsequent replannings of the same goal location. Dramatically speeds up replanning performance (40x) if costmap is largely static.
         allow_reverse_expansion: false      # If true, allows the robot to use the primitives to expand in the mirrored opposite direction of the current robot's orientation (to reverse).
         goal_heading_mode: "DEFAULT"        # DEFAULT, BIDIRECTIONAL, ALL_DIRECTION
         smooth_path: True                   # If true, does a simple and quick smoothing post-processing to the path

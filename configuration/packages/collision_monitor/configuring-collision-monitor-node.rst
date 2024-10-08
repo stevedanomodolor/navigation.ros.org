@@ -137,7 +137,7 @@ Parameters
   ============== =============================
 
   Description:
-    Maximum time interval in which source data is considered as valid. If no new data is received within this interval, the robot will be stopped. Setting ``source_timeout: 0.0`` disables this blocking mechanism. This parameter can be overriden per observation source.
+    Maximum time interval in which source data is considered as valid. If no new data is received within this interval, the robot will be stopped. Setting ``source_timeout: 0.0`` disables this blocking mechanism. This parameter can be overridden per observation source.
 
 :base_shift_correction:
 
@@ -193,7 +193,7 @@ Parameters
   ============== =======
 
   Description
-    Adds soft real-time priorization to the controller server to better ensure resources to time sensitive portions of the codebase. This will set the controller's execution thread to a higher priority than the rest of the system (``90``) to meet scheduling deadlines to have less missed loop rates. To use this feature, you use set the following inside of ``/etc/security/limits.conf`` to give userspace access to elevated prioritization permissions: ``<username> soft rtprio 99 <username> hard rtprio 99``
+    Adds soft real-time prioritization to the controller server to better ensure resources to time sensitive portions of the codebase. This will set the controller's execution thread to a higher priority than the rest of the system (``90``) to meet scheduling deadlines to have less missed loop rates. To use this feature, you use set the following inside of ``/etc/security/limits.conf`` to give userspace access to elevated prioritization permissions: ``<username> soft rtprio 99 <username> hard rtprio 99``
 
 :enable_stamped_cmd_vel:
 
@@ -232,7 +232,7 @@ Polygons parameters
   ============== =============================
 
   Description:
-    Polygon vertexes, listed in ``"[[p1.x, p1.y], [p2.x, p2.y], [p3.x, p3.y], ...]"`` format (e.g. ``"[[0.5, 0.25], [0.5, -0.25], [0.0, -0.25], [0.0, 0.25]]"`` for the square in the front). Used for ``polygon`` type. Minimum 3 points for a triangle polygon. If not specified, the collision monitor will use dynamic polygon subscription to ``polygon_sub_topic`` for points in the ``stop``/``slowdown``/``limit`` action types, or footprint subscriber to ``footprint_topic`` for ``approach`` action type.
+    Polygon vertices, listed in ``"[[p1.x, p1.y], [p2.x, p2.y], [p3.x, p3.y], ...]"`` format (e.g. ``"[[0.5, 0.25], [0.5, -0.25], [0.0, -0.25], [0.0, 0.25]]"`` for the square in the front). Used for ``polygon`` type. Minimum 3 points for a triangle polygon. If not specified, the collision monitor will use dynamic polygon subscription to ``polygon_sub_topic`` for points in the ``stop``/``slowdown``/``limit`` action types, or footprint subscriber to ``footprint_topic`` for ``approach`` action type.
 
 :``<polygon_name>``.polygon_sub_topic:
 
@@ -243,7 +243,7 @@ Polygons parameters
   ============== =============================
 
   Description:
-    Topic to listen the polygon points from. Applicable only for ``polygon`` type and ``stop``/``slowdown``/``limit`` action types. Causes an error, if not specified **and** points are also not specified. If both ``points`` and ``polygon_sub_topic`` are specified, the static ``points`` takes priority.
+    For ``polygon`` type, topic to listen the polygon points from. For ``circle`` type, topic to listen the circle radius from. Applicable for ``stop``/``slowdown``/``limit`` action types. Causes an error if not specified **and** static polygon geometry (using parameter ``points`` for ``polygon`` type or ``radius`` for ``circle`` type) is also not specified. If both static polygon geometry and ``polygon_sub_topic`` are specified, the static parameter takes priority.
 
 :``<polygon_name>``.footprint_topic:
 
@@ -256,6 +256,17 @@ Polygons parameters
   Description:
     Topic to listen the robot footprint from. Applicable only for ``polygon`` type and ``approach`` action type. If both ``points`` and ``footprint_topic`` are specified, the static ``points`` takes priority.
 
+:``<polygon_name>``.polygon_subscribe_transient_local:
+
+  ============== ===================================
+  Type           Default
+  -------------- -----------------------------------
+  bool           False
+  ============== ===================================
+
+  Description:
+    QoS durability setting for the incoming polygon or footprint topic subscription.
+
 :``<polygon_name>``.radius:
 
   ============== =============================
@@ -265,7 +276,7 @@ Polygons parameters
   ============== =============================
 
   Description:
-    Circle radius. Used for ``circle`` type. Causes an error, if not specialized.
+    Circle radius. Used for ``circle`` type. If not specified, the collision monitor will use dynamic polygon subscription to ``polygon_sub_topic`` for circle radius in the ``stop``/``slowdown``/``limit`` action types.
 
 :``<polygon_name>``.action_type:
 
@@ -413,7 +424,7 @@ All previous Polygon parameters apply, in addition to the following unique param
   ============== =============================
 
   Description:
-    Polygon vertexes, listed in ``"[[p1.x, p1.y], [p2.x, p2.y], [p3.x, p3.y], ...]"`` format (e.g. ``"[[0.5, 0.25], [0.5, -0.25], [0.0, -0.25], [0.0, 0.25]]"`` for the square in the front). Used for ``polygon`` type. Minimum 3 points for a triangle polygon. Causes an error, if not specified.
+    Polygon vertices, listed in ``"[[p1.x, p1.y], [p2.x, p2.y], [p3.x, p3.y], ...]"`` format (e.g. ``"[[0.5, 0.25], [0.5, -0.25], [0.0, -0.25], [0.0, 0.25]]"`` for the square in the front). Used for ``polygon`` type. Minimum 3 points for a triangle polygon. Causes an error, if not specified.
 
 :``<vel_poly>.<subpoly>``.linear_min:
 
@@ -563,6 +574,16 @@ Observation sources parameters
   Description:
     Maximum time interval in which source data is considered as valid. If no new data is received within this interval, the robot will be stopped. Setting ``source_timeout: 0.0`` disables this blocking mechanism. Overrides node parameter for each source individually, if desired.
 
+:bond_heartbeat_period:
+
+  ============== =============================
+  Type           Default
+  -------------- -----------------------------
+  double         0.1
+  ============== =============================
+
+  Description
+    The lifecycle node bond mechanism publishing period (on the /bond topic). Disabled if inferior or equal to 0.0.
 
 Example
 *******

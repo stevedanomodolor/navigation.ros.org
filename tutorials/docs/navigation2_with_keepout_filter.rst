@@ -53,7 +53,7 @@ where ``free_thresh`` and ``occupied_thresh`` thresholds are expressed in percen
 
   There is another parameter in a YAML metadata file called ``negate``. By default it is set to ``false``. When it is set to ``true``, blacker pixels will be considered as free, whiter pixels - as occupied. In this case we should count color lightness instead of darkness for ``trinary`` and ``scale`` modes. ``negate`` has no effect on ``raw`` mode.
 
-For Keepout Filter ``OccupancyGrid`` value is proportional to the passibility of area corresponting to this cell: higher values means more impassable areas. Cells with occupied values covers keep-out zones where robot will never enter or pass through. ``KeepoutFilter`` can also act as a "weighted areas layer" by setting the ``OccupancyGrid`` to something between ``[1-99]`` non-occupied values. Robot is allowed to move in these areas, however its presence there would be "undesirable" there (the higher the value, the sooner planners will try to get the robot out of this area).
+For Keepout Filter ``OccupancyGrid`` value is proportional to the passibility of area corresponding to this cell: higher values means more impassable areas. Cells with occupied values covers keep-out zones where robot will never enter or pass through. ``KeepoutFilter`` can also act as a "weighted areas layer" by setting the ``OccupancyGrid`` to something between ``[1-99]`` non-occupied values. Robot is allowed to move in these areas, however its presence there would be "undesirable" there (the higher the value, the sooner planners will try to get the robot out of this area).
 
 Keepout Filter also covers preferred lanes case, where robots should moving only on pre-defined lanes and permitted areas e.g. in warehouses. To use this feaure you need to prepare the mask image where the lanes and permitted areas will be marked with free values while all other areas will be occupied. TIP for drawing the mask in a ``trinary`` or ``scale`` mode: typically, amount of pixels belonging to lanes are much less than pixels covering other areas. In this case initially all lanes data might be drawn with a black pencil over white background and then (just before saving a PGM) "color inversion" tool in a image raster editor might be used.
 
@@ -87,7 +87,7 @@ Since filter mask image was created as a copy of main map, other fields of YAML-
 
 Each costmap filter reads incoming meta-information (such as filter type or data conversion coefficients) in a messages of ``nav2_msgs/CostmapFilterInfo`` type. These messages are being published by `Costmap Filter Info Publisher Server <https://github.com/ros-planning/navigation2/tree/main/nav2_map_server/src/costmap_filter_info>`_. The server is running as a lifecycle node. According to the `design document <https://github.com/ros-planning/navigation2/blob/main/doc/design/CostmapFilters_design.pdf>`_, ``nav2_msgs/CostmapFilterInfo`` messages are going in a pair with ``OccupancyGrid`` filter mask topic. Therefore, along with Costmap Filter Info Publisher Server there should be enabled a new instance of Map Server configured to publish filter mask.
 
-In order to enable Keepout Filter in your configuration, both servers should be enabled as a lifecycle nodes in Python launch-file. For example, this might look as follows, though adding them as Composition Nodes to your Navigation Component Container is also possible:
+In order to enable Keepout Filter in your configuration, both servers should be enabled as a lifecycle nodes in Python launch-file. It is also possible to add them as Composition Nodes to your Navigation Component Container, which might look as follows:
 
 .. code-block:: python
 
@@ -96,9 +96,13 @@ In order to enable Keepout Filter in your configuration, both servers should be 
   from ament_index_python.packages import get_package_share_directory
 
   from launch import LaunchDescription
-  from launch.actions import DeclareLaunchArgument
-  from launch.substitutions import LaunchConfiguration
-  from launch_ros.actions import Node
+  from launch.actions import DeclareLaunchArgument, GroupAction
+  from launch.conditions import IfCondition
+  from launch.substitutions import LaunchConfiguration, PythonExpression
+  from launch.substitutions import NotEqualsSubstitution
+  from launch_ros.actions import Node, LoadComposableNodes
+  from launch_ros.actions import PushRosNamespace
+  from launch_ros.descriptions import ComposableNode
   from nav2_common.launch import RewrittenYaml
 
 
@@ -106,7 +110,6 @@ In order to enable Keepout Filter in your configuration, both servers should be 
       # Get the launch directory
       costmap_filters_demo_dir = get_package_share_directory('nav2_costmap_filters_demo')
 
-      # Create our own temporary YAML files that include substitutions
       lifecycle_nodes = ['filter_mask_server', 'costmap_filter_info_server']
 
       # Parameters
@@ -115,6 +118,9 @@ In order to enable Keepout Filter in your configuration, both servers should be 
       autostart = LaunchConfiguration('autostart')
       params_file = LaunchConfiguration('params_file')
       mask_yaml_file = LaunchConfiguration('mask')
+      use_composition = LaunchConfiguration('use_composition')
+      container_name = LaunchConfiguration('container_name')
+      container_name_full = (namespace, '/', container_name)
 
       # Declare the launch arguments
       declare_namespace_cmd = DeclareLaunchArgument(
@@ -132,14 +138,20 @@ In order to enable Keepout Filter in your configuration, both servers should be 
           description='Automatically startup the nav2 stack')
 
       declare_params_file_cmd = DeclareLaunchArgument(
-              'params_file',
-              default_value=os.path.join(costmap_filters_demo_dir, 'params', 'keepout_params.yaml'),
-              description='Full path to the ROS 2 parameters file to use')
+          'params_file',
+          description='Full path to the ROS2 parameters file to use')
 
       declare_mask_yaml_file_cmd = DeclareLaunchArgument(
-              'mask',
-              default_value=os.path.join(costmap_filters_demo_dir, 'maps', 'keepout_mask.yaml'),
-              description='Full path to filter mask yaml file to load')
+          'mask',
+          description='Full path to filter mask yaml file to load')
+
+      declare_use_composition_cmd = DeclareLaunchArgument(
+          'use_composition', default_value='True',
+          description='Use composed bringup if True')
+
+      declare_container_name_cmd = DeclareLaunchArgument(
+          'container_name', default_value='nav2_container',
+          description='The name of container that nodes will load in if use composition')
 
       # Make re-written yaml
       param_substitutions = {
@@ -152,35 +164,68 @@ In order to enable Keepout Filter in your configuration, both servers should be 
           param_rewrites=param_substitutions,
           convert_types=True)
 
-      # Nodes launching commands
-      start_lifecycle_manager_cmd = Node(
-              package='nav2_lifecycle_manager',
-              executable='lifecycle_manager',
-              name='lifecycle_manager_costmap_filters',
-              namespace=namespace,
-              output='screen',
-              emulate_tty=True,  # https://github.com/ros2/launch/issues/188
-              parameters=[{'use_sim_time': use_sim_time},
-                          {'autostart': autostart},
-                          {'node_names': lifecycle_nodes}])
+      load_nodes = GroupAction(
+          condition=IfCondition(PythonExpression(['not ', use_composition])),
+          actions=[
+              Node(
+                  package='nav2_map_server',
+                  executable='map_server',
+                  name='filter_mask_server',
+                  namespace=namespace,
+                  output='screen',
+                  emulate_tty=True,  # https://github.com/ros2/launch/issues/188
+                  parameters=[configured_params]),
+              Node(
+                  package='nav2_map_server',
+                  executable='costmap_filter_info_server',
+                  name='costmap_filter_info_server',
+                  namespace=namespace,
+                  output='screen',
+                  emulate_tty=True,  # https://github.com/ros2/launch/issues/188
+                  parameters=[configured_params]),
+              Node(
+                  package='nav2_lifecycle_manager',
+                  executable='lifecycle_manager',
+                  name='lifecycle_manager_costmap_filters',
+                  namespace=namespace,
+                  output='screen',
+                  emulate_tty=True,  # https://github.com/ros2/launch/issues/188
+                  parameters=[{'use_sim_time': use_sim_time},
+                              {'autostart': autostart},
+                              {'node_names': lifecycle_nodes}])
+          ]
+      )
 
-      start_map_server_cmd = Node(
-              package='nav2_map_server',
-              executable='map_server',
-              name='filter_mask_server',
-              namespace=namespace,
-              output='screen',
-              emulate_tty=True,  # https://github.com/ros2/launch/issues/188
-              parameters=[configured_params])
-
-      start_costmap_filter_info_server_cmd = Node(
-              package='nav2_map_server',
-              executable='costmap_filter_info_server',
-              name='costmap_filter_info_server',
-              namespace=namespace,
-              output='screen',
-              emulate_tty=True,  # https://github.com/ros2/launch/issues/188
-              parameters=[configured_params])
+      load_composable_nodes = GroupAction(
+          condition=IfCondition(use_composition),
+          actions=[
+              PushRosNamespace(
+                  condition=IfCondition(NotEqualsSubstitution(LaunchConfiguration('namespace'), '')),
+                  namespace=namespace),
+              LoadComposableNodes(
+                  target_container=container_name_full,
+                  composable_node_descriptions=[
+                      ComposableNode(
+                          package='nav2_map_server',
+                          plugin='nav2_map_server::MapServer',
+                          name='filter_mask_server',
+                          parameters=[configured_params]),
+                      ComposableNode(
+                          package='nav2_map_server',
+                          plugin='nav2_map_server::CostmapFilterInfoServer',
+                          name='costmap_filter_info_server',
+                          parameters=[configured_params]),
+                      ComposableNode(
+                          package='nav2_lifecycle_manager',
+                          plugin='nav2_lifecycle_manager::LifecycleManager',
+                          name='lifecycle_manager_costmap_filters',
+                          parameters=[{'use_sim_time': use_sim_time},
+                                      {'autostart': autostart},
+                                      {'node_names': lifecycle_nodes}]),
+                  ]
+              )
+          ]
+      )
 
       ld = LaunchDescription()
 
@@ -190,9 +235,11 @@ In order to enable Keepout Filter in your configuration, both servers should be 
       ld.add_action(declare_params_file_cmd)
       ld.add_action(declare_mask_yaml_file_cmd)
 
-      ld.add_action(start_lifecycle_manager_cmd)
-      ld.add_action(start_map_server_cmd)
-      ld.add_action(start_costmap_filter_info_server_cmd)
+      ld.add_action(declare_use_composition_cmd)
+      ld.add_action(declare_container_name_cmd)
+
+      ld.add_action(load_nodes)
+      ld.add_action(load_composable_nodes)
 
       return ld
 
@@ -231,7 +278,7 @@ Ready-to-go standalone Python launch-script, YAML-file with ROS parameters and f
   $ cd ~/tutorials_ws
   $ colcon build --symlink-install --packages-select nav2_costmap_filters_demo
   $ source ~/tutorials_ws/install/setup.bash
-  $ ros2 launch nav2_costmap_filters_demo costmap_filter_info.launch.py params_file:=src/navigation2_tutorials/nav2_costmap_filters_demo/params/keepout_params.yaml mask:=src/navigation2_tutorials/nav2_costmap_filters_demo/maps/keepout_mask.yaml
+  $ ros2 launch nav2_costmap_filters_demo costmap_filter_info.launch.py params_file:=`pwd`/src/navigation2_tutorials/nav2_costmap_filters_demo/params/keepout_params.yaml mask:=`pwd`/src/navigation2_tutorials/nav2_costmap_filters_demo/maps/keepout_mask.yaml use_composition:=True
 
 3. Enable Keepout Filter
 ------------------------

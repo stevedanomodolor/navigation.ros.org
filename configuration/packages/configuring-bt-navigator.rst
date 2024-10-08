@@ -40,8 +40,8 @@ Parameters
 
   Description
     Path to the default behavior tree XML description for ``NavigateToPose``, see :ref:`configuring_behavior_tree_xml` for details on this file.
-    Used to be ``default_bt_xml_filename`` pre-Galactic.
-    You can use substitution to specify file path like ``$(find-pkg-share my_package)/behavior_tree/my_nav_to_pose_bt.xml``.
+    This parameter used to be ``default_bt_xml_filename`` pre-Galactic.
+    You can use substitution to specify file path like ``$(find-pkg-share my_package)/behavior_tree/my_nav_to_pose_bt.xml``. However, if left empty, the default behavior tree XML will be loaded from the ``nav2_bt_navigator`` package.
 
 
 :default_nav_through_poses_bt_xml:
@@ -54,8 +54,19 @@ Parameters
 
   Description
     Path to the default behavior tree XML description for ``NavigateThroughPoses``, see :ref:`configuring_behavior_tree_xml` for details on this file. New to Galactic after ``NavigateThroughPoses`` was added. 
-    You can use substitution to specify file path like ``$(find-pkg-share my_package)/behavior_tree/my_nav_through_poses_bt.xml``.
+    You can use substitution to specify file path like ``$(find-pkg-share my_package)/behavior_tree/my_nav_through_poses_bt.xml``. However, if left empty, the default behavior tree XML will be loaded from the ``nav2_bt_navigator`` package.
 
+
+:always_reload_bt_xml:
+
+  ====== =======
+  Type   Default
+  ------ -------
+  bool   false 
+  ====== =======
+
+  Description
+    Always load the requested behavior tree XML description, regardless of the name of the currently active XML.
 
 :plugin_lib_names:
 
@@ -217,6 +228,17 @@ Parameters
   Description
     List of of error codes to compare.
 
+:bond_heartbeat_period:
+
+  ============== =============================
+  Type           Default
+  -------------- -----------------------------
+  double         0.1
+  ============== =============================
+
+  Description
+    The lifecycle node bond mechanism publishing period (on the /bond topic). Disabled if inferior or equal to 0.0.
+
 Example
 *******
 .. code-block:: yaml
@@ -229,14 +251,15 @@ Example
         transform_tolerance: 0.1
         default_nav_to_pose_bt_xml: replace/with/path/to/bt.xml # or $(find-pkg-share my_package)/behavior_tree/my_nav_to_pose_bt.xml
         default_nav_through_poses_bt_xml: replace/with/path/to/bt.xml # or $(find-pkg-share my_package)/behavior_tree/my_nav_through_poses_bt.xml
+        always_reload_bt_xml: false
         goal_blackboard_id: goal
         goals_blackboard_id: goals
         path_blackboard_id: path
         navigators: ['navigate_to_pose', 'navigate_through_poses']
         navigate_to_pose:
-          plugin: "nav2_bt_navigator/NavigateToPoseNavigator"
+          plugin: "nav2_bt_navigator::NavigateToPoseNavigator" # In Iron and older versions, "/" was used instead of "::"
         navigate_through_poses:
-          plugin: "nav2_bt_navigator/NavigateThroughPosesNavigator"
+          plugin: "nav2_bt_navigator::NavigateThroughPosesNavigator" # In Iron and older versions, "/" was used instead of "::"
         plugin_lib_names: 
           - nav2_compute_path_to_pose_action_bt_node
           - nav2_follow_path_action_bt_node
