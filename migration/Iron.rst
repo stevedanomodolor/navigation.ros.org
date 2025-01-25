@@ -311,8 +311,9 @@ Smac and Theta* planners have a new parameter ``terminal_checking_interval`` whi
 
 Enable goal orientation non-specificity
 *******************************************
-`PR #4148 <https://github.com/ros-planning/navigation2/pull/4127>`_  introduces a new parameter(goal_heading_mode) in the smac planner, specifically the smac planner hybrid and smac planner lattice that allows for the
+`PR #4148 <https://github.com/ros-planning/navigation2/pull/4127>`_  introduces two new parameters(goal_heading_mode, coarse_search_resolution) in the smac planner, specifically the smac planner hybrid and smac planner lattice that allows for the
 planner to plan to a goal with multiple orientations and return the best path in just one planning call. This is useful for robots that can approach a goal from multiple orientations and the user does not want to plan to each orientation separately.
+In addition to this, the coarse_search_resolution parameter is added to the smac planner lattice to allow for a faster search for the best path.
 
 Here is an Example of the smacHybrid planner with the default goal_heading_mode to see the difference in the planned path.
 
