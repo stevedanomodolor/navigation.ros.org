@@ -344,7 +344,7 @@ Parameters
   ============== ===========================
   Type           Default                    
   -------------- ---------------------------
-  string            "4"   
+  string            "1"   
   ============== ===========================
 
   Description
@@ -380,7 +380,7 @@ Example
         lookup_table_size: 20.0             # Size of the dubin/reeds-sheep distance window to cache, in meters.
         cache_obstacle_heuristic: false     # Cache the obstacle map dynamic programming distance expansion heuristic between subsequent replannings of the same goal location. Dramatically speeds up replanning performance (40x) if costmap is largely static.
         allow_reverse_expansion: false      # If true, allows the robot to use the primitives to expand in the mirrored opposite direction of the current robot's orientation (to reverse).
-        coarse_search_resolution: 4         # Number of bins to skip when doing a coarse search for the path. Only used for all_direction goal heading mode.
+        coarse_search_resolution: 1         # Number of bins to skip when doing a coarse search for the path. Only used for all_direction goal heading mode.
         goal_heading_mode: "DEFAULT"        # DEFAULT, BIDIRECTIONAL, ALL_DIRECTION
         smooth_path: True                   # If true, does a simple and quick smoothing post-processing to the path
         smoother:
