@@ -255,7 +255,7 @@ In the `PR #4621 <https://github.com/ros-navigation/navigation2/pull/4621>`_ MPP
 MPPI Optimizer's performance is improved by 40-50%. Now MPPI Controller can also be run on ARM processors which do not support SIMD Instructions extensively. 
 
 Enable goal orientation non-specificity
-*******************************************
+***************************************
 `PR #4148 <https://github.com/ros-planning/navigation2/pull/4127>`_  introduces two new parameters(goal_heading_mode, coarse_search_resolution) in the smac planner, specifically the smac planner hybrid and smac planner lattice that allows for the
 planner to plan to a goal with multiple orientations and return the best path in just one planning call. This is useful for robots that can approach a goal from multiple orientations and the user does not want to plan to each orientation separately.
 In addition to this, the coarse_search_resolution parameter is added to the smac planner lattice to allow for a faster search for the best path.
