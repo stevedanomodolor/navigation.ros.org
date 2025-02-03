@@ -280,3 +280,42 @@ Here is an Example of the smacHybrid planner with the all_directions goal_headin
     :width: 700px
     :alt: Navigation2 with smacHybrid planner with all_direction goal_heading_mode
     :align: center
+
+DriveOnHeading and BackUp behaviors: Addition of acceleration constraints
+*************************************************************************
+`PR #4810 <https://github.com/ros-navigation/navigation2/pull/4810>`_ adds new parameters ``acceleration_limit``, ``deceleration_limit``, ``minimum_speed`` for the `DriveOnHeading` and `BackUp` Behaviors. The default values are as follows:
+
+- ``acceleration_limit``: 2.5
+- ``deceleration_limit``: -2.5
+- ``minimum_speed``: 0.10
+
+Rotation Shim Deceleration as a function of its target orientation
+******************************************************************
+
+In `PR #4864 <https://github.com/ros-navigation/navigation2/pull/4864>`_ the Rotation Shim Controller was updated to decelerate as a function of its target orientation. This allows the robot to slow down as it approaches its target orientation, reducing overshoot when passing to the primary controller. The deceleration is controlled by the `max_angular_accel` parameter.
+
+A demo can be seen below with the following parameters:
+
+.. code-block:: yaml
+
+  [...]:
+    plugin: "nav2_rotation_shim_controller::RotationShimController"
+    angular_dist_threshold: 1.22 # (70 degrees)
+    angular_disengage_threshold: 0.05 # (3 degrees)
+    rotate_to_heading_angular_vel: 0.8
+    max_angular_accel: 0.5
+
+
+.. image:: images/rotation_shim_decel.gif
+  :width: 800
+  :alt: Rotation Shim Deceleration
+  :align: center
+
+Rotation Shim Open-loop Control
+*******************************
+
+The parameter ``closed_loop`` was introduced to the Rotation Shim Controller to allow users to choose between open-loop and closed-loop control. If false, the rotationShimController will use the last commanded velocity as the next iteration's current velocity. When acceleration limits are set appropriately and the robot's controllers are responsive, this can be a good assumption. If true, it will use odometry to estimate the robot's current speed. In this case it is important that the source is high-rate and low-latency to account for control delay.
+
+Default value:
+
+- true
